@@ -1,0 +1,411 @@
+;; =================================
+;; CMPU-101, Prof. Hunsberger
+;; Yuan Yuan, Controller (Yahtzee)
+;; =================================
+
+
+(define tester
+  (lambda (datum)
+    (printf "~A ===> " datum)
+    (eval datum)))
+
+
+
+;; ROLL-DICE
+;; -----------------------------------------------------------------
+;; INPUTS:  None.
+;;  OUTPUT:  A random toss of a 6-sided die.
+
+(define roll-dice
+  (lambda ()
+    (+ 1 (random 6))))
+
+
+
+;; COMPUTE-HISTOGRAM
+;; ---------------------------------------------------------------
+;; INPUT: VECK-O-DICE, a vector of dice values (each 1 thru 6)
+;; OUTPUT: A vector of length 7, where the ith slot contains
+;;          the number of occurrences of i in VECK-O-DICE.
+;;          (The 0th slot of the output vector is ignored.)
+
+
+(define compute-histogram-helper
+  (lambda (veck-o-dice histy)
+    (dotimes (i (vector-length veck-o-dice))
+             (let ((index (vector-ref veck-o-dice i)))
+               (vector-set! histy index (+ 1 (vector-ref histy index)))))
+    histy))
+
+(define compute-histogram
+  (lambda (veck-o-dice)
+    (compute-histogram-helper veck-o-dice (make-vector 7))))
+
+
+
+;; HAS-THREE-OF-A-KIND?
+;; ------------------------------------------------------------------------
+;; INPUT: DICE, a vector of length 5 (each element should be one of
+;;              {1,2,3,4,5,6}
+;; OUTPUT: #t, if any three dices have the same number
+;;         #f, otherwise
+
+(define has-three-of-a-kind?
+  (lambda (dice)
+    (let* ((states (compute-histogram dice))
+           (answer (make-vector 1)))
+      (vector-set! answer 0 #f)
+      (dotimes (i (vector-length states))
+               (if (<= 3 (vector-ref states i))
+                   (if (equal? #f (vector-ref answer 0))
+                       (vector-set! answer 0 #t))))
+      (vector-ref answer 0))))
+
+
+
+;; HAS-FOUR-OF-A-KIND?
+;; --------------------------------------------------------------------------
+;; INPUT: VECKY, a vector of length 5 (each element should be one of
+;;              {1,2,3,4,5,6}
+;; OUTPUT: #t, if any four dices have the same number
+;;         #f, otherwise
+
+(define has-four-of-a-kind?
+  (lambda (dice)
+    (let* ((states (compute-histogram dice))
+           (answer (make-vector 1)))
+      (vector-set! answer 0 #f)
+      (dotimes (i (vector-length states))
+               (if (<= 4 (vector-ref states i))
+                   (if (equal? #f (vector-ref answer 0))
+                       (vector-set! answer 0 #t))))
+      (vector-ref answer 0))))
+
+
+
+;; HAS-YAHTZEE?
+;; --------------------------------------------------------------------------
+;; INPUT: VECKY, a vector of length 5 (each element should be one of
+;;              {1,2,3,4,5,6}
+;; OUTPUT: #t, if all five dices have the same number
+;;         #f, otherwise
+
+(define has-yahtzee?
+  (lambda (dice)
+    (let* ((states (compute-histogram dice))
+           (answer (make-vector 1)))
+      (vector-set! answer 0 #f)
+      (dotimes (i (vector-length states))
+               (if (<= 5 (vector-ref states i))
+                   (if (equal? #f (vector-ref answer 0))
+                       (vector-set! answer 0 #t))))
+      (vector-ref answer 0))))
+
+
+
+;; HAS-FULL-HOUSE?
+;; --------------------------------------------------------------------------
+;; INPUT: VECKY, a vector of length 5 (each element should be one of
+;;              {1,2,3,4,5,6}
+;; OUTPUT: #t for 2 of one kind and 3 of another, or 5 of a kind
+;;         #f, otherwise
+
+
+(define has-full-house?
+  (lambda (vecky)
+    (let* ((states (compute-histogram vecky))
+           (indy1 (vector-ref states 1))
+           (indy2 (vector-ref states 2))
+           (indy3 (vector-ref states 3))
+           (indy4 (vector-ref states 4))
+           (indy5 (vector-ref states 5))
+           (indy6 (vector-ref states 6)))
+      (if (or (= 3 indy1) (= 3 indy2) (= 3 indy3) (= 3 indy4) (= 3 indy5) (= 3 indy6))
+          (if (or (= 2 indy1) (= 2 indy2) (= 2 indy3) (= 2 indy4) (= 2 indy5) (= 2 indy6))
+              #t
+              #f)
+          (if (has-yahtzee? vecky)
+              #t
+              #f)))))
+
+
+
+;; HAS-SMALL-STRAIGHT?
+;; --------------------------------------------------------------------------
+;; INPUT: VECKY, a vector of length 5 (each element should be one of
+;;              {1,2,3,4,5,6}
+;; OUTPUT: #t if dice contain 1,2,3,4 in any order;
+;;           or 2,3,4,5 in any order;
+;;           or 3,4,5,6 in any order
+;;         #f, otherwise
+
+
+(define has-small-straight?
+  (lambda (vecky)
+    (let* ((states (compute-histogram vecky))
+           (indy1 (vector-ref states 1))
+           (indy2 (vector-ref states 2))
+           (indy3 (vector-ref states 3))
+           (indy4 (vector-ref states 4))
+           (indy5 (vector-ref states 5))
+           (indy6 (vector-ref states 6)))
+      (cond
+        ((and (>= indy1 1) (>= indy2 1) (>= indy3 1) (>= indy4 1))
+         #t)
+        ((and (>= indy2 1) (>= indy3 1) (>= indy4 1) (>= indy5 1))
+         #t)
+        ((and (>= indy3 1) (>= indy4 1) (>= indy5 1) (>= indy6 1))
+         #t)
+        (else
+         #f)))))
+
+
+;; HAS-LARGE-STRAIGHT?
+;; --------------------------------------------------------------------------
+;; INPUT: VECKY, a vector of length 5 (each element should be one of
+;;              {1,2,3,4,5,6}
+;; OUTPUT: #t if dice contain 1,2,3,4,5 in any order;
+;;           or 2,3,4,5,6 in any order
+;;         #f, otherwise
+
+
+(define has-large-straight?
+  (lambda (vecky)
+    (let* ((states (compute-histogram vecky))
+           (indy1 (vector-ref states 1))
+           (indy2 (vector-ref states 2))
+           (indy3 (vector-ref states 3))
+           (indy4 (vector-ref states 4))
+           (indy5 (vector-ref states 5))
+           (indy6 (vector-ref states 6)))
+      (cond
+        ((and (>= indy1 1) (>= indy2 1) (>= indy3 1) (>= indy4 1) (>= indy5 1))
+         #t)
+        ((and (>= indy2 1) (>= indy3 1) (>= indy4 1) (>= indy5 1) (>= indy6 1))
+         #t)
+        (else
+         #f)))))
+
+          
+;; SUM-DICE
+;; ---------------------------
+;; INPUT:   DICE, a vector of length 5, where each element
+;;                is a number in {1,2,3,4,5,6}
+;; OUTPUT:  The sum of the dice
+
+(define sum-dice
+  (lambda (dice)
+    (let* ((states (compute-histogram dice))
+           (indy1 (vector-ref states 1))
+           (indy2 (vector-ref states 2))
+           (indy3 (vector-ref states 3))
+           (indy4 (vector-ref states 4))
+           (indy5 (vector-ref states 5))
+           (indy6 (vector-ref states 6)))
+      (+ (* indy1 1) (* indy2 2) (* indy3 3) (* indy4 4) (* indy5 5) (* indy6 6)))))
+
+
+
+;; compute-score
+;; -----------------------------
+;; INPUTS:  DICE, a vector of length 5, where each element
+;;                is a number in {1,2,3,4,5,6}
+;;          CATEGORY, a number specifying a scoring category
+;;                as follows:
+;;             1 -- 6,  the top six scoring categories
+;;             7,  full house
+;;             8,  3 of a kind
+;;             9,  4 of a kind
+;;             10, small straight
+;;             11, large straight
+;;             12, yahtzee
+;;             13, chance
+;; OUTPUT:  The numerical score that the given vector of DICE
+;;            should receive if the player wants to score them
+;;            in the specified CATEGORY.
+;; SIDE EFFECT: Slot of yahtzee-fill? with an index as CATEGORY
+;;                will change from #f to #t
+;; Note:  For some of the categories (e.g., full house, 3 of a kind, 4
+;;         of a kind, small straight, large straight, yahtzee), if the
+;;         DICE do not satisfy appropriate conditions, then the computed
+;;         score should be 0.  
+
+
+(define compute-score
+  (lambda (dice category)
+    (let* ((states (compute-histogram dice))
+           (indy1 (vector-ref states 1))
+           (indy2 (vector-ref states 2))
+           (indy3 (vector-ref states 3))
+           (indy4 (vector-ref states 4))
+           (indy5 (vector-ref states 5))
+           (indy6 (vector-ref states 6)))
+      (cond
+        ((= category 1)
+         (* indy1 1))
+        ((= category 2)
+         (* indy2 2))
+        ((= category 3)
+         (* indy3 3))
+        ((= category 4)
+         (* indy4 4))
+        ((= category 5)
+         (* indy5 5))
+        ((= category 6)
+         (* indy6 6))
+        ((= category 7)
+         (if (has-full-house? dice)
+             25
+             0))
+        ((= category 8)
+         (if (has-three-of-a-kind? dice)
+             (sum-dice dice)
+             0))
+        ((= category 9)
+         (if (has-four-of-a-kind? dice)
+             (sum-dice dice)
+             0))
+        ((= category 10)
+         (if (has-small-straight? dice)
+             30
+             0))
+        ((= category 11)
+         (if (has-large-straight? dice)
+             40
+             0))
+        ((= category 12)
+         (if (has-yahtzee? dice)
+             50
+             0))
+        ((= category 13)
+         (sum-dice dice))))))
+
+
+;; roll-some!
+;; -----------------------------------------------------------------
+;; INPUTS:  YAHTZ, a yahtzee data structure 
+;;          ROLLER, a vector of length 5, where each element
+;;                is either 1 or 0.
+;;  OUTPUT:  Don't care
+;;  SIDE EFFECT:  (Can only run the Program when NUM-ROLLS-LEFT and  
+;;    NUM-TURNS-LEFT do not equal 0.) Looks at each element of ROLLER.  
+;;    If the Ith element of ROLLER is a 1, then it destructively modifies 
+;;    the Ith slot of the dice vector in the yahtzee data structure,
+;;    replacing it with a random toss of a 6-sided die; if the
+;;    Ith element of ROLLER is a 0, then it does not change the
+;;    Ith slot of the dice vector in the yahtzee data structure.
+
+
+(define roll-some!
+  (lambda (yahtz roller)
+    (let ((num-rolls-left (yahtzee-num-rolls-left yahtz))
+          (num-turns-left (yahtzee-num-turns-left yahtz)))
+      (cond
+        ;;No rolls left. Find current score
+        ((<= num-rolls-left 0)
+         (vector-ref (yahtzee-state yahtz) 2))
+        ;;No turns left. Find total score
+        ((<= num-turns-left 0)
+         (vector-ref (yahtzee-state yahtz) 3))
+        (else 
+         (dotimes (i 5)
+                  (if (= (vector-ref roller i) 1)
+                      (vector-set! (yahtzee-dice yahtz) i (roll-dice))))
+         (printf "Your Current Dice: ~A" (yahtzee-dice yahtz))
+         (set-yahtzee-num-rolls-left! yahtz (- (yahtzee-num-rolls-left yahtz) 1))))))) 
+
+
+
+    
+;; roll-all!
+;; -----------------------------------------------
+;; INPUT:  YAHTZ, a yahtzee data structure
+;; OUTPUT:  Don't care
+;; SIDE EFFECT: If NUM-ROLLS-LEFT and NUM-TURNS-LEFT 
+;;    are larger than 0, destructive modifies the vector of dice
+;;    in the yahtzee data structure, replacing each element
+;;    with a random toss of a six-sided die. Decrease the
+;;    NUM-ROLLS-LEFT by 1. Print out the 
+;;               Otherwise, do not run the function and tell
+;;    players what they should do next.
+
+
+(define roll-all!
+  (lambda (yahtz)
+    (let ((num-rolls-left (yahtzee-num-rolls-left yahtz))
+          (num-turns-left (yahtzee-num-turns-left yahtz)))
+      (cond
+        ;;No rolls left. Find current score
+        ((<= num-rolls-left 0)
+         (vector-ref (yahtzee-state yahtz) 2))
+        ;;No turns left. Find total score
+        ((<= num-turns-left 0)
+         (vector-ref (yahtzee-state yahtz) 3))
+        (else 
+         (dotimes (i 5)
+                  (vector-set! (yahtzee-dice yahtz) i (roll-dice)))
+         (printf "Your Current Dice: ~A" (yahtzee-dice yahtz))
+         (set-yahtzee-num-rolls-left! yahtz (- (yahtzee-num-rolls-left yahtz) 1)))))))
+
+
+
+;; score!
+;; -------------------------------
+;; INPUTS:  YAHTZ, a yahtzee data structure
+;;          CATEGORY, a number from 1 to 13, inclusive, that
+;;            specifies a category for the compute-score function
+;; SIDE EFFECT:  The scores field of the yahtzee data structure
+;;   contains a scoresheet (however you implement it).  If the 
+;;   slot in that scoresheet specified by CATEGORY is currently
+;;   unfilled, then this function destructively modifies the scoresheet
+;;   by inserting the appropriate score (as computed by compute-score)
+;;   into the specified slot; otherwise, it makes no change to the 
+;;   scoresheet. 
+;; OUTPUT:  If a score was entered, the output should be the value
+;;    of that score; otherwise, the output should be #f.
+
+
+(define score!
+  (lambda (yahtz category)
+    (let ((fill? (vector-ref (yahtzee-fill? yahtz) category))
+          (curr-score (compute-score (yahtzee-dice yahtz) category))
+          (curr-turn (yahtzee-num-turns-left yahtz)))
+      (cond
+        ;;#f if the CATEGORY of the scoresheet is filled
+        (fill?
+         #f)
+        ;;Current Score if the CATEGORY of the scoresheet is not filled
+        (else
+         (vector-set! (yahtzee-scores yahtz) category curr-score)
+         (set-yahtzee-num-turns-left! yahtz (- curr-turn 1))
+         (set-yahtzee-num-rolls-left! yahtz 3)
+         (vector-set! (yahtzee-fill? yahtz) category #t)
+         curr-score)))))
+
+
+               
+
+
+;; new-game  --  in your "controller" file
+;;--------------------------------------------------
+;; INPUTS:  None
+;; OUTPUT:  A yahtzee data structure whose contents are 
+;;           suitably initialized for the start of a new
+;;           game of yahtzee.
+
+(define new-game
+  (lambda ()
+    (let ((vecky (make-vector 16))
+          (vecky2 (make-vector 4)))
+      (dotimes (i 16)
+               (vector-set! vecky i #f))
+      (vector-set! vecky2 1 "You can roll the dice now")
+      (vector-set! vecky2 2 "You have no rolls left. Save the score")
+      (vector-set! vecky2 3 "You have no turns left. Find your total score now")
+      (make-yahtzee
+       vecky2
+       vecky
+       (make-vector 5)
+       (make-vector 16)
+       3
+       13))))
