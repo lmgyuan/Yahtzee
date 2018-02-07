@@ -1,0 +1,178 @@
+;; =================================
+;; CMPU-101, Prof. Hunsberger
+;; Yuan Yuan, View (Yahtzee)
+;; =================================
+
+
+
+
+
+
+;; curr-score-in-cat  --  in your "view" file
+;;------------------------------------------------------
+;; INPUTS:  YAHTZ, a yahtzee data structure
+;;          CATEGORY, a number from 1 to 13, inclusive, as described
+;;            for the compute-score function
+;; OUTPUT:  If the scoresheet in the yahtzee data structure contains
+;;            a numerical score in the specified CATEGORY, then the
+;;            output should be that number; otherwise, it should be #f.
+;; NOTE:  You should only use 0 to represent that a player has 
+;;         entered a score of 0 in a given slot; if the slot is 
+;;         currently empty, use something such as #f or the symbol _.
+
+
+(define curr-score-in-cat
+  (lambda (yahtz category)
+    (let ((fill (vector-ref (yahtz-fill? yahtz) category))
+          (num (vector-ref (yahtz-scores yahtz) category)))
+      (if (equal? fill #f)
+          num
+          #f))))
+
+
+;;  print-scoresheet -- in your "view" file
+;; -------------------------------------------------------
+;;  INPUTS:  YAHTZ, a yahtzee data structure
+;;  OUTPUT:  Don't care
+;;  SIDE EFFECT:  Prints out the contents of the scores
+;;     in the yahtzee data structure, showing the name of
+;;     each category and the corresponding score.  
+;;
+;;   For example, it might look something like this:
+;;
+;;      CAT       SCORE
+;;       1         __
+;;       2         6
+;;       3         9
+;;       4         16
+;;       5         __
+;;       6         __
+;;
+;;       FullH     25
+;;       3ofKind   21
+;;       4ofKind   __
+;;       SmStr     30
+;;       LgStr     0
+;;       Yahtzee   __
+;;       Chance    __
+;;       Bonus     __
+;;       Total     107
+
+;;     Don't worry if your columns don't line up perfectly.
+
+(define print-scoresheet
+  (lambda (yahtz)
+    (let* ((num1 (vector-ref (yahtzee-scores yahtz) 1))
+           (num2 (vector-ref (yahtzee-scores yahtz) 2))
+           (num3 (vector-ref (yahtzee-scores yahtz) 3))
+           (num4 (vector-ref (yahtzee-scores yahtz) 4))
+           (num5 (vector-ref (yahtzee-scores yahtz) 5))
+           (num6 (vector-ref (yahtzee-scores yahtz) 6))
+           (num7 (vector-ref (yahtzee-scores yahtz) 7))
+           (num8 (vector-ref (yahtzee-scores yahtz) 8))
+           (num9 (vector-ref (yahtzee-scores yahtz) 9))
+           (num10 (vector-ref (yahtzee-scores yahtz) 10))
+           (num11 (vector-ref (yahtzee-scores yahtz) 11))
+           (num12 (vector-ref (yahtzee-scores yahtz) 12))
+           (num13 (vector-ref (yahtzee-scores yahtz) 13))
+           (num14 (vector-ref (yahtzee-scores yahtz) 14))
+           (num15 (vector-ref (yahtzee-scores yahtz) 15))
+           (sum (make-vector 1)))
+      (printf
+       "CAT           SCORE~%")
+      (if (vector-ref (yahtzee-fill? yahtz) 1)
+          (printf
+           "1             ~A~%" num1)
+          (printf
+           "1             _~%"))
+      (if (vector-ref (yahtzee-fill? yahtz) 2)
+          (printf
+           "2             ~A~%" num2)
+          (printf
+           "2             _~%"))
+      (if (vector-ref (yahtzee-fill? yahtz) 3)
+          (printf
+           "3             ~A~%" num3)
+          (printf
+           "3             _~%"))
+      (if (vector-ref (yahtzee-fill? yahtz) 4)
+          (printf
+           "4             ~A~%" num4)
+          (printf
+           "4             _~%"))
+      (if (vector-ref (yahtzee-fill? yahtz) 5)
+          (printf
+           "5             ~A~%" num5)
+          (printf
+           "5             _~%"))
+      (if (vector-ref (yahtzee-fill? yahtz) 6)
+          (printf
+           "6             ~A~%" num6)
+          (printf
+           "6             _~%"))
+      (if (vector-ref (yahtzee-fill? yahtz) 7)
+          (printf
+           "FullH        ~A~%" num7)
+          (printf
+           "FullH        _~%"))
+      (if (vector-ref (yahtzee-fill? yahtz) 8)
+          (printf
+           "3ofKind       ~A~%" num8)
+          (printf
+           "3ofKind       _~%"))
+      (if (vector-ref (yahtzee-fill? yahtz) 9)
+          (printf
+           "4ofKind       ~A~%" num9)
+          (printf
+           "4ofKind       _~%"))
+      (if (vector-ref (yahtzee-fill? yahtz) 10)
+          (printf
+           "SmStr         ~A~%" num10)
+          (printf
+           "SmStr         _~%"))
+      (if (vector-ref (yahtzee-fill? yahtz) 11)
+          (printf
+           "LgStr         ~A~%" num11)
+          (printf
+           "LgStr         _~%"))
+      (if (vector-ref (yahtzee-fill? yahtz) 12)
+          (printf
+           "Yahtzee       ~A~%" num12)
+          (printf
+           "Yahtzee       _~%"))
+      (if (vector-ref (yahtzee-fill? yahtz) 13)
+          (printf
+           "Chance        ~A~%" num13)
+          (printf
+           "Chance        _~%"))
+      (if (and (vector-ref (yahtzee-fill? yahtz) 1)
+               (vector-ref (yahtzee-fill? yahtz) 2)
+               (vector-ref (yahtzee-fill? yahtz) 3)
+               (vector-ref (yahtzee-fill? yahtz) 4)
+               (vector-ref (yahtzee-fill? yahtz) 5)
+               (vector-ref (yahtzee-fill? yahtz) 6))
+          (if (>= (+ num1 num2 num3 num4 num5 num6) 63)
+              (vector-set! (yahtzee-score yahtz) 14 35)))
+      (if (vector-ref (yahtzee-fill? yahtz) 14)
+          (printf
+           "Bonus         ~A~%" num14)
+          (printf
+           "Bonus         _~%"))
+      (dotimes (i 15)
+               (let ((num (vector-ref sum 0)))
+                 (vector-set! sum 0 (+ num (vector-ref (yahtzee-scores yahtz) i)))))
+      (printf "Total         ~A" (vector-ref sum 0)))))
+
+;;  FINAL-SCORE
+;; ------------------------------------------------
+;;  INPUT: YAHTZ, a yahtzee data structure
+;;  OUTPUT: A number that shows the total score of
+;;            the current game
+
+(define final-score
+  (lambda (yahtz)
+    (let ((sum (make-vector 1)))
+      (dotimes (i 15)
+               (let ((num (vector-ref sum 0)))
+                 (vector-set! sum 0 (+ num (vector-ref (yahtzee-scores yahtz) i)))))
+      (vector-ref sum 0))))
