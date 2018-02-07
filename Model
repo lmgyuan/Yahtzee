@@ -1,0 +1,12 @@
+;; =================================
+;; CMPU-101, Prof. Hunsberger
+;; Yuan Yuan, Model (Yahtzee)
+;; =================================
+
+
+
+;; Create data structure yahtzee
+(define-struct yahtzee
+  (state fill? dice scores num-rolls-left num-turns-left))
+
+
